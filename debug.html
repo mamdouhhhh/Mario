@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mario Party Tracker - DEBUG</title>
+  <style>
+    body { background: #0d0221; color: #fff; font-family: monospace; padding: 20px; }
+    #error-box { background: #330000; border: 2px solid red; padding: 15px; border-radius: 8px; margin-bottom: 20px; white-space: pre-wrap; font-size: 13px; display: none; }
+    #status { color: #FFD700; font-size: 16px; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <div id="status">Loading scripts...</div>
+  <div id="error-box"></div>
+  <div id="root"></div>
+
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      document.getElementById('error-box').style.display = 'block';
+      document.getElementById('error-box').innerText = 'ERROR: ' + msg + '\nLine: ' + line + ', Col: ' + col + '\nStack: ' + (error ? error.stack : 'n/a');
+      document.getElementById('status').innerText = '❌ Error caught';
+      return true;
+    };
+    document.getElementById('status').innerText = 'Step 1: Loading React...';
+  </script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" 
+    onload="document.getElementById('status').innerText='Step 2: React loaded. Loading ReactDOM...'"
+    onerror="document.getElementById('status').innerText='❌ FAILED: React script did not load'"></script>
+  
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    onload="document.getElementById('status').innerText='Step 3: ReactDOM loaded. Loading Babel...'"
+    onerror="document.getElementById('status').innerText='❌ FAILED: ReactDOM script did not load'"></script>
+  
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"
+    onload="document.getElementById('status').innerText='Step 4: Babel loaded. Compiling app...'"
+    onerror="document.getElementById('status').innerText='❌ FAILED: Babel script did not load'"></script>
+
+  <script type="text/babel" data-presets="react">
+    try {
+      const { useState } = React;
+      function TestApp() {
+        return React.createElement('div', { style: { color: '#FFD700', fontSize: 24, padding: 20 } }, '✅ SUCCESS! React + Babel + JSX all working!');
+      }
+      ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(TestApp));
+      document.getElementById('status').innerText = '✅ All steps completed';
+    } catch (e) {
+      document.getElementById('error-box').style.display = 'block';
+      document.getElementById('error-box').innerText = 'CAUGHT ERROR: ' + e.message + '\n' + e.stack;
+      document.getElementById('status').innerText = '❌ Error in app code';
+    }
+  </script>
+</body>
+</html>
