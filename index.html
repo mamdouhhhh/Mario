@@ -6,7 +6,6 @@
   <title>Mario Party Tracker</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0d0221; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -26,495 +25,247 @@
       return true;
     };
   </script>
-  <script type="text/babel">
+  <script>
 try {
 const { useState } = React;
-
 const POINTS = { 1: 10, 2: 6, 3: 3, 4: 1 };
 const PLACE_COLORS = { 1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32", 4: "#a78bfa" };
-
 const CHARACTERS = [
-  { id: "mario",    name: "Mario",    emoji: "🔴", bg: "#e8003d" },
-  { id: "luigi",    name: "Luigi",    emoji: "🟢", bg: "#2ecc71" },
-  { id: "peach",    name: "Peach",    emoji: "👸", bg: "#ffb6c1" },
-  { id: "toad",     name: "Toad",     emoji: "🍄", bg: "#3498db" },
-  { id: "yoshi",    name: "Yoshi",    emoji: "🦕", bg: "#27ae60" },
-  { id: "bowser",   name: "Bowser",   emoji: "🐢", bg: "#e67e22" },
-  { id: "rosalina", name: "Rosalina", emoji: "⭐", bg: "#8e44ad" },
-  { id: "waluigi",  name: "Waluigi",  emoji: "💜", bg: "#6c3483" },
-  { id: "wario",    name: "Wario",    emoji: "💛", bg: "#f39c12" },
-  { id: "daisy",    name: "Daisy",    emoji: "🌼", bg: "#e8b84b" },
-  { id: "donkeyk",  name: "DK",       emoji: "🦍", bg: "#795548" },
-  { id: "birdo",    name: "Birdo",    emoji: "🎀", bg: "#e91e8c" },
+  { id: "mario", name: "Mario", emoji: "\u{1F534}", bg: "#e8003d" },
+  { id: "luigi", name: "Luigi", emoji: "\u{1F7E2}", bg: "#2ecc71" },
+  { id: "peach", name: "Peach", emoji: "\u{1F478}", bg: "#ffb6c1" },
+  { id: "toad", name: "Toad", emoji: "\u{1F344}", bg: "#3498db" },
+  { id: "yoshi", name: "Yoshi", emoji: "\u{1F995}", bg: "#27ae60" },
+  { id: "bowser", name: "Bowser", emoji: "\u{1F422}", bg: "#e67e22" },
+  { id: "rosalina", name: "Rosalina", emoji: "\u2B50", bg: "#8e44ad" },
+  { id: "waluigi", name: "Waluigi", emoji: "\u{1F49C}", bg: "#6c3483" },
+  { id: "wario", name: "Wario", emoji: "\u{1F49B}", bg: "#f39c12" },
+  { id: "daisy", name: "Daisy", emoji: "\u{1F33C}", bg: "#e8b84b" },
+  { id: "donkeyk", name: "DK", emoji: "\u{1F98D}", bg: "#795548" },
+  { id: "birdo", name: "Birdo", emoji: "\u{1F380}", bg: "#e91e8c" }
 ];
-
 const STORAGE_KEY = "mario_party_v3";
-
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { players: [], games: [], rivalries: [] };
     return { players: [], games: [], rivalries: [], ...JSON.parse(raw) };
-  } catch { return { players: [], games: [], rivalries: [] }; }
+  } catch {
+    return { players: [], games: [], rivalries: [] };
+  }
 }
-
 function save(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); return true; }
-  catch { return false; }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch {
+    return false;
+  }
 }
-
 const STARS = Array.from({ length: 18 }, (_, i) => ({
-  top: `${(i * 37 + 11) % 95}%`, left: `${(i * 53 + 7) % 95}%`,
-  size: i % 3 === 0 ? 18 : i % 3 === 1 ? 12 : 9, op: i % 4 === 0 ? 0.4 : 0.2,
+  top: `${(i * 37 + 11) % 95}%`,
+  left: `${(i * 53 + 7) % 95}%`,
+  size: i % 3 === 0 ? 18 : i % 3 === 1 ? 12 : 9,
+  op: i % 4 === 0 ? 0.4 : 0.2
 }));
-
 function Avatar({ player, size = 38 }) {
-  const ch = CHARACTERS.find(c => c.id === player.char) || CHARACTERS[0];
-  return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: `radial-gradient(circle at 35% 35%, ${ch.bg}ff, ${ch.bg}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.5, flexShrink: 0, boxShadow: `0 0 0 2px ${ch.bg}55, 0 2px 8px rgba(0,0,0,0.4)` }}>
-      {ch.emoji}
-    </div>
-  );
+  const ch = CHARACTERS.find((c) => c.id === player.char) || CHARACTERS[0];
+  return /* @__PURE__ */ React.createElement("div", { style: { width: size, height: size, borderRadius: "50%", background: `radial-gradient(circle at 35% 35%, ${ch.bg}ff, ${ch.bg}88)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.5, flexShrink: 0, boxShadow: `0 0 0 2px ${ch.bg}55, 0 2px 8px rgba(0,0,0,0.4)` } }, ch.emoji);
 }
-
 function Modal({ children, onClose }) {
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 200, backdropFilter: "blur(6px)" }}>
-      <div style={{ background: "linear-gradient(180deg,#1e0a45,#0d0221)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: "22px 22px 0 0", padding: "16px 18px 36px", width: "100%", maxWidth: 480, maxHeight: "88vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", width: 30, height: 30, color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 14 }}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
+  return /* @__PURE__ */ React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 200, backdropFilter: "blur(6px)" } }, /* @__PURE__ */ React.createElement("div", { style: { background: "linear-gradient(180deg,#1e0a45,#0d0221)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: "22px 22px 0 0", padding: "16px 18px 36px", width: "100%", maxWidth: 480, maxHeight: "88vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, style: { background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", width: 30, height: 30, color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 14 } }, "\u2715")), children));
 }
-
 function App() {
   const initial = load();
-  const [players, setPlayers]     = useState(initial.players);
-  const [games, setGames]         = useState(initial.games);
+  const [players, setPlayers] = useState(initial.players);
+  const [games, setGames] = useState(initial.games);
   const [rivalries, setRivalries] = useState(initial.rivalries);
-  const [tab, setTab]             = useState("board");
-  const [saved, setSaved]         = useState(false);
-
+  const [tab, setTab] = useState("board");
+  const [saved, setSaved] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
-  const [playerName, setPlayerName]     = useState("");
-  const [pickedChar, setPickedChar]     = useState(null);
-
+  const [playerName, setPlayerName] = useState("");
+  const [pickedChar, setPickedChar] = useState(null);
   const [loggingGame, setLoggingGame] = useState(false);
-  const [placement, setPlacement]     = useState({});
-  const [gameError, setGameError]     = useState("");
-
+  const [placement, setPlacement] = useState({});
+  const [gameError, setGameError] = useState("");
   const [addingRivalry, setAddingRivalry] = useState(false);
-  const [rivalP1, setRivalP1]             = useState(null);
-  const [rivalP2, setRivalP2]             = useState(null);
-
+  const [rivalP1, setRivalP1] = useState(null);
+  const [rivalP2, setRivalP2] = useState(null);
   const [loggingMatch, setLoggingMatch] = useState(null);
-  const [matchGame, setMatchGame]       = useState("");
-  const [matchWinner, setMatchWinner]   = useState(null);
-
+  const [matchGame, setMatchGame] = useState("");
+  const [matchWinner, setMatchWinner] = useState(null);
   const persist = (p, g, r) => {
     const ok = save({ players: p, games: g, rivalries: r });
-    if (ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    if (ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2e3);
+    }
   };
-
-  const getChar = (id) => CHARACTERS.find(c => c.id === id) || CHARACTERS[0];
-  const getPlayer = (id) => players.find(p => p.id === id);
-
-  // Players
+  const getChar = (id) => CHARACTERS.find((c) => c.id === id) || CHARACTERS[0];
+  const getPlayer = (id) => players.find((p) => p.id === id);
   const confirmAddPlayer = () => {
     if (!playerName.trim() || !pickedChar) return;
     const np = [...players, { id: Date.now(), name: playerName.trim(), char: pickedChar }];
-    setPlayers(np); persist(np, games, rivalries);
-    setAddingPlayer(false); setPlayerName(""); setPickedChar(null);
+    setPlayers(np);
+    persist(np, games, rivalries);
+    setAddingPlayer(false);
+    setPlayerName("");
+    setPickedChar(null);
   };
   const removePlayer = (id) => {
-    const np = players.filter(p => p.id !== id);
-    setPlayers(np); persist(np, games, rivalries);
+    const np = players.filter((p) => p.id !== id);
+    setPlayers(np);
+    persist(np, games, rivalries);
   };
-
-  // Games
   const setPlace = (place, pid) => {
-    setPlacement(prev => {
+    setPlacement((prev) => {
       const u = { ...prev };
-      Object.keys(u).forEach(k => { if (u[k] === pid) delete u[k]; });
-      if (pid) u[place] = pid; else delete u[place];
+      Object.keys(u).forEach((k) => {
+        if (u[k] === pid) delete u[k];
+      });
+      if (pid) u[place] = pid;
+      else delete u[place];
       return u;
     });
   };
   const submitGame = () => {
     const used = Object.keys(placement).map(Number).sort();
-    if (used.length < 2) { setGameError("Assign at least 2 places."); return; }
-    for (let i = 0; i < used.length; i++) {
-      if (used[i] !== i + 1) { setGameError("Places must start from 1st."); return; }
+    if (used.length < 2) {
+      setGameError("Assign at least 2 places.");
+      return;
     }
-    const ng = [...games, { id: Date.now(), date: new Date().toLocaleDateString("en-GB"), placements: { ...placement } }];
-    setGames(ng); persist(players, ng, rivalries);
-    setLoggingGame(false); setPlacement({}); setGameError(""); setTab("board");
+    for (let i = 0; i < used.length; i++) {
+      if (used[i] !== i + 1) {
+        setGameError("Places must start from 1st.");
+        return;
+      }
+    }
+    const ng = [...games, { id: Date.now(), date: (/* @__PURE__ */ new Date()).toLocaleDateString("en-GB"), placements: { ...placement } }];
+    setGames(ng);
+    persist(players, ng, rivalries);
+    setLoggingGame(false);
+    setPlacement({});
+    setGameError("");
+    setTab("board");
   };
   const deleteGame = (id) => {
-    const ng = games.filter(g => g.id !== id);
-    setGames(ng); persist(players, ng, rivalries);
+    const ng = games.filter((g) => g.id !== id);
+    setGames(ng);
+    persist(players, ng, rivalries);
   };
-
-  // Stats
-  const getStats = () => players.map(player => {
-    const pg = games.filter(g => Object.values(g.placements).includes(player.id));
+  const getStats = () => players.map((player) => {
+    const pg = games.filter((g) => Object.values(g.placements).includes(player.id));
     let pts = 0, wins = 0;
-    const pc = { 1:0, 2:0, 3:0, 4:0 };
-    pg.forEach(g => {
-      const pl = parseInt(Object.entries(g.placements).find(([,v]) => v === player.id)?.[0]);
-      if (pl) { pts += POINTS[pl]; pc[pl]++; if (pl===1) wins++; }
+    const pc = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    pg.forEach((g) => {
+      const pl = parseInt(Object.entries(g.placements).find(([, v]) => v === player.id)?.[0]);
+      if (pl) {
+        pts += POINTS[pl];
+        pc[pl]++;
+        if (pl === 1) wins++;
+      }
     });
-    return { ...player, pts, gamesPlayed: pg.length, avg: pg.length ? pts/pg.length : 0, wins, pc };
-  }).sort((a,b) => b.avg-a.avg || b.wins-a.wins || b.pts-a.pts);
-
-  // Rivalries
+    return { ...player, pts, gamesPlayed: pg.length, avg: pg.length ? pts / pg.length : 0, wins, pc };
+  }).sort((a, b) => b.avg - a.avg || b.wins - a.wins || b.pts - a.pts);
   const confirmAddRivalry = () => {
     if (!rivalP1 || !rivalP2 || rivalP1 === rivalP2) return;
     const nr = [...rivalries, { id: Date.now(), p1: rivalP1, p2: rivalP2, matches: [] }];
-    setRivalries(nr); persist(players, games, nr);
-    setAddingRivalry(false); setRivalP1(null); setRivalP2(null);
+    setRivalries(nr);
+    persist(players, games, nr);
+    setAddingRivalry(false);
+    setRivalP1(null);
+    setRivalP2(null);
   };
   const submitMatch = () => {
     if (!matchGame.trim() || !matchWinner) return;
-    const nr = rivalries.map(r => r.id === loggingMatch
-      ? { ...r, matches: [...r.matches, { id: Date.now(), game: matchGame.trim(), winner: matchWinner, date: new Date().toLocaleDateString("en-GB") }] }
-      : r);
-    setRivalries(nr); persist(players, games, nr);
-    setLoggingMatch(null); setMatchGame(""); setMatchWinner(null);
+    const nr = rivalries.map((r) => r.id === loggingMatch ? { ...r, matches: [...r.matches, { id: Date.now(), game: matchGame.trim(), winner: matchWinner, date: (/* @__PURE__ */ new Date()).toLocaleDateString("en-GB") }] } : r);
+    setRivalries(nr);
+    persist(players, games, nr);
+    setLoggingMatch(null);
+    setMatchGame("");
+    setMatchWinner(null);
   };
   const deleteRivalry = (id) => {
-    const nr = rivalries.filter(r => r.id !== id);
-    setRivalries(nr); persist(players, games, nr);
+    const nr = rivalries.filter((r) => r.id !== id);
+    setRivalries(nr);
+    persist(players, games, nr);
   };
-
   const stats = getStats();
-
-  return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#0d0221 0%,#1a0a3e 40%,#0d1a3e 100%)", color: "#fff", position: "relative", overflowX: "hidden" }}>
-
-      {STARS.map((s, i) => (
-        <div key={i} style={{ position: "fixed", top: s.top, left: s.left, pointerEvents: "none", zIndex: 0, opacity: s.op, fontSize: s.size }}>⭐</div>
-      ))}
-
-      {/* Header */}
-      <div style={{ position: "relative", zIndex: 1, background: "linear-gradient(180deg,#c8000a,#8b0000)", padding: "18px 20px 14px", textAlign: "center", borderBottom: "4px solid #FFD700", boxShadow: "0 4px 24px rgba(0,0,0,0.6)" }}>
-        <div style={{ fontSize: 20, marginBottom: 4 }}>⭐🎲⭐</div>
-        <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: 2, color: "#FFD700", textShadow: "0 0 20px #FFD70088, 2px 3px 0 #7b0000" }}>MARIO PARTY</div>
-        <div style={{ fontSize: 10, letterSpacing: 4, color: "#FFE066", opacity: 0.9, marginTop: 3 }}>JAMBOREE TRACKER</div>
-        <div style={{ position: "absolute", top: 14, right: 14, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-          <div style={{ background: "rgba(0,0,0,0.35)", border: "1px solid #FFD70055", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#FFD700" }}>{games.length} 🎲</div>
-          {saved && <div style={{ background: "rgba(46,204,113,0.85)", borderRadius: 20, padding: "2px 9px", fontSize: 10, fontWeight: 700 }}>✅ Saved</div>}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ position: "relative", zIndex: 1, display: "flex", background: "rgba(0,0,0,0.5)", borderBottom: "1px solid rgba(255,215,0,0.2)" }}>
-        {[["board","🏆","Board"],["players","👥","Players"],["history","📜","History"],["rivals","⚔","Rivals"]].map(([id,ico,label]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "10px 4px", background: tab===id ? "rgba(255,215,0,0.12)" : "transparent", border: "none", borderBottom: tab===id ? "3px solid #FFD700" : "3px solid transparent", color: tab===id ? "#FFD700" : "rgba(255,255,255,0.5)", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-            <span style={{ fontSize: 16 }}>{ico}</span><span>{label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div style={{ position: "relative", zIndex: 1, padding: 14, maxWidth: 480, margin: "0 auto", paddingBottom: 40 }}>
-
-        {/* BOARD */}
-        {tab === "board" && (
-          <div>
-            <button onClick={() => { if (players.length < 2) { alert("Add at least 2 players first!"); return; } setPlacement({}); setLoggingGame(true); }} style={{ width: "100%", padding: 14, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 14, color: "#FFD700", fontSize: 15, fontWeight: 900, cursor: "pointer", marginBottom: 16, letterSpacing: 1, boxShadow: "0 4px 20px rgba(232,0,61,0.5)" }}>
-              🎲 LOG NEW GAME
-            </button>
-            {stats.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.35)" }}>
-                <div style={{ fontSize: 56 }}>🎮</div>
-                <div style={{ marginTop: 12, fontSize: 14 }}>Add players to get started!</div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "7px 10px", fontSize: 10, flexWrap: "wrap", justifyContent: "center" }}>
-                  {[1,2,3,4].map(p => <span key={p} style={{ color: PLACE_COLORS[p] }}>{["🥇","🥈","🥉","4th"][p-1]} {POINTS[p]}pt</span>)}
-                  <span style={{ color: "rgba(255,255,255,0.3)" }}>· avg/game</span>
-                </div>
-                {stats.map((s, i) => (
-                  <div key={s.id} style={{ background: i===0 ? "linear-gradient(135deg,rgba(255,215,0,0.18),rgba(255,215,0,0.06))" : "rgba(255,255,255,0.05)", border: i===0 ? "1px solid rgba(255,215,0,0.5)" : "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "12px 14px", marginBottom: 10, position: "relative", overflow: "hidden" }}>
-                    {i===0 && <div style={{ position: "absolute", top: 0, right: 0, background: "linear-gradient(135deg,#FFD700,#FFA500)", color: "#7b0000", fontSize: 9, fontWeight: 900, padding: "3px 10px", borderBottomLeftRadius: 10, letterSpacing: 1 }}>⭐ LEADING</div>}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <div style={{ position: "relative" }}>
-                        <Avatar player={s} size={44} />
-                        <div style={{ position: "absolute", bottom: -2, right: -4, background: i < 3 ? ["#FFD700","#C0C0C0","#CD7F32"][i] : "#555", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: i < 3 ? "#000" : "#fff", border: "2px solid #0d0221" }}>{i+1}</div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: i===0 ? "#FFD700" : "#fff" }}>{s.name}</div>
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>{s.gamesPlayed}g · {s.pts}pts · {s.wins}🏆</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: i===0 ? "#FFD700" : "#fff", lineHeight: 1 }}>{s.avg.toFixed(1)}</div>
-                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: 0.5 }}>AVG/GAME</div>
-                      </div>
-                    </div>
-                    {s.gamesPlayed > 0 && (
-                      <div style={{ display: "flex", gap: 5, marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                        {[1,2,3,4].map(p => (
-                          <div key={p} style={{ flex: 1, textAlign: "center", background: "rgba(0,0,0,0.25)", borderRadius: 8, padding: "3px 0" }}>
-                            <div style={{ fontSize: 9, color: PLACE_COLORS[p] }}>{["🥇","🥈","🥉","4th"][p-1]}</div>
-                            <div style={{ fontSize: 13, fontWeight: 800 }}>{s.pc[p]}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* PLAYERS */}
-        {tab === "players" && (
-          <div>
-            <button onClick={() => setAddingPlayer(true)} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 14, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer", marginBottom: 14, letterSpacing: 1 }}>
-              ➕ ADD PLAYER
-            </button>
-            {players.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
-                <div style={{ fontSize: 44 }}>👥</div><div style={{ marginTop: 8 }}>No players yet!</div>
-              </div>
-            ) : players.map(p => {
-              const ch = getChar(p.char);
-              return (
-                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "10px 14px", marginBottom: 8 }}>
-                  <Avatar player={p} size={40} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 800, fontSize: 15 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: ch.bg, marginTop: 1 }}>{ch.emoji} {ch.name}</div>
-                  </div>
-                  <button onClick={() => removePlayer(p.id)} style={{ background: "rgba(231,76,60,0.15)", border: "1px solid rgba(231,76,60,0.3)", borderRadius: 8, color: "#e74c3c", padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>✕</button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* HISTORY */}
-        {tab === "history" && (
-          <div>
-            {games.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.3)" }}>
-                <div style={{ fontSize: 48 }}>📜</div><div style={{ marginTop: 8, fontSize: 13 }}>No games yet.</div>
-              </div>
-            ) : [...games].reverse().map((g, gi) => (
-              <div key={g.id} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontWeight: 800, fontSize: 13, color: "#FFD700" }}>⭐ Game #{games.length - gi}</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{g.date}</span>
-                  <button onClick={() => deleteGame(g.id)} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.25)", cursor: "pointer", fontSize: 15 }}>🗑</button>
-                </div>
-                {Object.entries(g.placements).sort(([a],[b])=>a-b).map(([place, pid]) => {
-                  const player = getPlayer(pid);
-                  if (!player) return null;
-                  const pl = parseInt(place);
-                  return (
-                    <div key={place} style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 6 }}>
-                      <span style={{ fontSize: 16, width: 24, textAlign: "center" }}>{["🥇","🥈","🥉","4th"][pl-1]}</span>
-                      <Avatar player={player} size={26} />
-                      <span style={{ flex: 1, fontWeight: 600, fontSize: 14 }}>{player.name}</span>
-                      <span style={{ color: PLACE_COLORS[pl], fontWeight: 800, fontSize: 13 }}>+{POINTS[pl]}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* RIVALS */}
-        {tab === "rivals" && (
-          <div>
-            <button onClick={() => { if (players.length < 2) { alert("Add at least 2 players first!"); return; } setAddingRivalry(true); }} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 14, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer", marginBottom: 14, letterSpacing: 1 }}>
-              ⚔ NEW RIVALRY
-            </button>
-            {rivalries.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.3)" }}>
-                <div style={{ fontSize: 48 }}>⚔</div>
-                <div style={{ marginTop: 8, fontSize: 13 }}>No rivalries yet.</div>
-                <div style={{ marginTop: 6, fontSize: 11, opacity: 0.6 }}>Track Kart, Tennis, anything.</div>
-              </div>
-            ) : rivalries.map(r => {
-              const p1 = getPlayer(r.p1), p2 = getPlayer(r.p2);
-              if (!p1 || !p2) return null;
-              const p1wins = r.matches.filter(m => m.winner === r.p1).length;
-              const p2wins = r.matches.filter(m => m.winner === r.p2).length;
-              const total = r.matches.length;
-              return (
-                <div key={r.id} style={{ background: "rgba(108,52,131,0.2)", border: "1px solid rgba(167,139,250,0.25)", borderRadius: 16, padding: 14, marginBottom: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Avatar player={p1} size={36} />
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 20, fontWeight: 900, color: "#FFD700" }}>{p1wins}</div>
-                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>WINS</div>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: 18 }}>⚔</div>
-                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{total} match{total!==1?"es":""}</div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ textAlign: "center" }}>
-                        <div style={{ fontSize: 20, fontWeight: 900, color: "#FFD700" }}>{p2wins}</div>
-                        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)" }}>WINS</div>
-                      </div>
-                      <Avatar player={p2} size={36} />
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontWeight: 800, fontSize: 14 }}>{p1.name}</span>
-                    <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>vs</span>
-                    <span style={{ fontWeight: 800, fontSize: 14 }}>{p2.name}</span>
-                  </div>
-                  {total > 0 && (
-                    <div style={{ display: "flex", height: 6, borderRadius: 4, overflow: "hidden", marginBottom: 10, background: "rgba(255,255,255,0.1)" }}>
-                      <div style={{ width: `${(p1wins/total)*100}%`, background: getChar(p1.char).bg }} />
-                      <div style={{ flex: 1, background: getChar(p2.char).bg }} />
-                    </div>
-                  )}
-                  {r.matches.length > 0 && (
-                    <div style={{ marginBottom: 10 }}>
-                      {[...r.matches].reverse().slice(0,5).map(m => {
-                        const winner = getPlayer(m.winner);
-                        return (
-                          <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                            <span style={{ fontSize: 11, flex: 1, color: "rgba(255,255,255,0.6)" }}>{m.game}</span>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: winner ? getChar(winner.char).bg : "#fff" }}>🏆 {winner?.name}</span>
-                            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>{m.date}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { setLoggingMatch(r.id); setMatchGame(""); setMatchWinner(null); }} style={{ flex: 1, padding: 8, background: "rgba(167,139,250,0.2)", border: "1px solid rgba(167,139,250,0.4)", borderRadius: 10, color: "#a78bfa", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>+ Log Match</button>
-                    <button onClick={() => deleteRivalry(r.id)} style={{ padding: "8px 12px", background: "transparent", border: "1px solid rgba(231,76,60,0.25)", borderRadius: 10, color: "rgba(231,76,60,0.5)", fontSize: 12, cursor: "pointer" }}>🗑</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* MODAL: Add Player */}
-      {addingPlayer && (
-        <Modal onClose={() => { setAddingPlayer(false); setPlayerName(""); setPickedChar(null); }}>
-          <h2 style={{ margin: "0 0 14px", fontSize: 17, color: "#FFD700" }}>👤 Add Player</h2>
-          <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Player name..." style={{ width: "100%", padding: "11px 14px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, color: "#fff", fontSize: 15, outline: "none", marginBottom: 14 }} />
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8, letterSpacing: 1 }}>PICK A CHARACTER</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 }}>
-            {CHARACTERS.map(ch => (
-              <button key={ch.id} onClick={() => setPickedChar(ch.id)} style={{ padding: "10px 4px", background: pickedChar===ch.id ? `${ch.bg}44` : "rgba(255,255,255,0.05)", border: pickedChar===ch.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                <span style={{ fontSize: 22 }}>{ch.emoji}</span>
-                <span style={{ fontSize: 9, color: pickedChar===ch.id ? ch.bg : "rgba(255,255,255,0.5)", fontWeight: 700 }}>{ch.name.toUpperCase()}</span>
-              </button>
-            ))}
-          </div>
-          <button onClick={confirmAddPlayer} disabled={!playerName.trim() || !pickedChar} style={{ width: "100%", padding: 13, background: (!playerName.trim()||!pickedChar) ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 12, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
-            ✅ ADD PLAYER
-          </button>
-        </Modal>
-      )}
-
-      {/* MODAL: Log Game */}
-      {loggingGame && (
-        <Modal onClose={() => { setLoggingGame(false); setPlacement({}); setGameError(""); }}>
-          <h2 style={{ margin: "0 0 4px", fontSize: 17, color: "#FFD700" }}>🎲 Log Game</h2>
-          <p style={{ margin: "0 0 14px", fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Tap players to assign places.</p>
-          {[1,2,3,4].map(place => (
-            <div key={place} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: PLACE_COLORS[place], marginBottom: 6, letterSpacing: 1 }}>
-                {["🥇 1ST","🥈 2ND","🥉 3RD","4TH"][place-1]} — +{POINTS[place]}pts
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                {players.map(p => {
-                  const assignedTo = Object.entries(placement).find(([,v]) => v===p.id)?.[0];
-                  const isHere = placement[place] === p.id;
-                  const isElsewhere = assignedTo && !isHere;
-                  const ch = getChar(p.char);
-                  return (
-                    <button key={p.id} onClick={() => setPlace(place, isHere ? null : p.id)} disabled={isElsewhere} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: isHere ? `${ch.bg}55` : isElsewhere ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.08)", border: isHere ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: isElsewhere ? "rgba(255,255,255,0.2)" : "#fff", fontWeight: 700, fontSize: 13, cursor: isElsewhere ? "not-allowed" : "pointer" }}>
-                      <span style={{ fontSize: 14 }}>{ch.emoji}</span> {p.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-          {gameError && <div style={{ color: "#e74c3c", fontSize: 13, marginBottom: 10 }}>{gameError}</div>}
-          <button onClick={submitGame} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 12, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer", marginTop: 4 }}>
-            ✅ SAVE GAME
-          </button>
-        </Modal>
-      )}
-
-      {/* MODAL: Add Rivalry */}
-      {addingRivalry && (
-        <Modal onClose={() => { setAddingRivalry(false); setRivalP1(null); setRivalP2(null); }}>
-          <h2 style={{ margin: "0 0 14px", fontSize: 17, color: "#a78bfa" }}>⚔ New Rivalry</h2>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>PLAYER 1</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
-            {players.map(p => { const ch = getChar(p.char); return (
-              <button key={p.id} onClick={() => setRivalP1(p.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: rivalP1===p.id ? `${ch.bg}55` : "rgba(255,255,255,0.08)", border: rivalP1===p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                <span>{ch.emoji}</span> {p.name}
-              </button>
-            );})}
-          </div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>PLAYER 2</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 }}>
-            {players.filter(p => p.id !== rivalP1).map(p => { const ch = getChar(p.char); return (
-              <button key={p.id} onClick={() => setRivalP2(p.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: rivalP2===p.id ? `${ch.bg}55` : "rgba(255,255,255,0.08)", border: rivalP2===p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                <span>{ch.emoji}</span> {p.name}
-              </button>
-            );})}
-          </div>
-          <button onClick={confirmAddRivalry} disabled={!rivalP1||!rivalP2} style={{ width: "100%", padding: 13, background: (!rivalP1||!rivalP2) ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 12, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
-            ⚔ CREATE RIVALRY
-          </button>
-        </Modal>
-      )}
-
-      {/* MODAL: Log Match */}
-      {loggingMatch && (() => {
-        const r = rivalries.find(x => x.id === loggingMatch);
-        if (!r) return null;
-        const p1 = getPlayer(r.p1), p2 = getPlayer(r.p2);
-        return (
-          <Modal onClose={() => { setLoggingMatch(null); setMatchGame(""); setMatchWinner(null); }}>
-            <h2 style={{ margin: "0 0 14px", fontSize: 17, color: "#a78bfa" }}>🎮 Log Match</h2>
-            <input value={matchGame} onChange={e => setMatchGame(e.target.value)} placeholder="Game (e.g. Mario Kart)" style={{ width: "100%", padding: "11px 14px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, outline: "none", marginBottom: 14 }} />
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>WHO WON?</div>
-            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-              {[p1,p2].map(p => { const ch = getChar(p.char); return (
-                <button key={p.id} onClick={() => setMatchWinner(p.id)} style={{ flex: 1, padding: "14px 10px", background: matchWinner===p.id ? `${ch.bg}55` : "rgba(255,255,255,0.07)", border: matchWinner===p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 14, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <Avatar player={p} size={40} />
-                  <span style={{ fontWeight: 800, fontSize: 14, color: "#fff" }}>{p.name}</span>
-                  {matchWinner===p.id && <span style={{ fontSize: 16 }}>🏆</span>}
-                </button>
-              );})}
-            </div>
-            <button onClick={submitMatch} disabled={!matchGame.trim()||!matchWinner} style={{ width: "100%", padding: 13, background: (!matchGame.trim()||!matchWinner) ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 12, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
-              ✅ SAVE MATCH
-            </button>
-          </Modal>
-        );
-      })()}
-
-    </div>
-  );
+  return /* @__PURE__ */ React.createElement("div", { style: { minHeight: "100vh", background: "linear-gradient(160deg,#0d0221 0%,#1a0a3e 40%,#0d1a3e 100%)", color: "#fff", position: "relative", overflowX: "hidden" } }, STARS.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { position: "fixed", top: s.top, left: s.left, pointerEvents: "none", zIndex: 0, opacity: s.op, fontSize: s.size } }, "\u2B50")), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", zIndex: 1, background: "linear-gradient(180deg,#c8000a,#8b0000)", padding: "18px 20px 14px", textAlign: "center", borderBottom: "4px solid #FFD700", boxShadow: "0 4px 24px rgba(0,0,0,0.6)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 20, marginBottom: 4 } }, "\u2B50\u{1F3B2}\u2B50"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 28, fontWeight: 900, letterSpacing: 2, color: "#FFD700", textShadow: "0 0 20px #FFD70088, 2px 3px 0 #7b0000" } }, "MARIO PARTY"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, letterSpacing: 4, color: "#FFE066", opacity: 0.9, marginTop: 3 } }, "JAMBOREE TRACKER"), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 14, right: 14, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" } }, /* @__PURE__ */ React.createElement("div", { style: { background: "rgba(0,0,0,0.35)", border: "1px solid #FFD70055", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#FFD700" } }, games.length, " \u{1F3B2}"), saved && /* @__PURE__ */ React.createElement("div", { style: { background: "rgba(46,204,113,0.85)", borderRadius: 20, padding: "2px 9px", fontSize: 10, fontWeight: 700 } }, "\u2705 Saved"))), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", zIndex: 1, display: "flex", background: "rgba(0,0,0,0.5)", borderBottom: "1px solid rgba(255,215,0,0.2)" } }, [["board", "\u{1F3C6}", "Board"], ["players", "\u{1F465}", "Players"], ["history", "\u{1F4DC}", "History"], ["rivals", "\u2694\uFE0F", "Rivals"]].map(([id, ico, label]) => /* @__PURE__ */ React.createElement("button", { key: id, onClick: () => setTab(id), style: { flex: 1, padding: "10px 4px", background: tab === id ? "rgba(255,215,0,0.12)" : "transparent", border: "none", borderBottom: tab === id ? "3px solid #FFD700" : "3px solid transparent", color: tab === id ? "#FFD700" : "rgba(255,255,255,0.5)", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16 } }, ico), /* @__PURE__ */ React.createElement("span", null, label)))), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", zIndex: 1, padding: 14, maxWidth: 480, margin: "0 auto", paddingBottom: 40 } }, tab === "board" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    if (players.length < 2) {
+      alert("Add at least 2 players first!");
+      return;
+    }
+    setPlacement({});
+    setLoggingGame(true);
+  }, style: { width: "100%", padding: 14, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 14, color: "#FFD700", fontSize: 15, fontWeight: 900, cursor: "pointer", marginBottom: 16, letterSpacing: 1, boxShadow: "0 4px 20px rgba(232,0,61,0.5)" } }, "\u{1F3B2} LOG NEW GAME"), stats.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.35)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 56 } }, "\u{1F3AE}"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12, fontSize: 14 } }, "Add players to get started!")) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "7px 10px", fontSize: 10, flexWrap: "wrap", justifyContent: "center" } }, [1, 2, 3, 4].map((p) => /* @__PURE__ */ React.createElement("span", { key: p, style: { color: PLACE_COLORS[p] } }, ["\u{1F947}", "\u{1F948}", "\u{1F949}", "4th"][p - 1], " ", POINTS[p], "pt")), /* @__PURE__ */ React.createElement("span", { style: { color: "rgba(255,255,255,0.3)" } }, "\xB7 avg/game")), stats.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.id, style: { background: i === 0 ? "linear-gradient(135deg,rgba(255,215,0,0.18),rgba(255,215,0,0.06))" : "rgba(255,255,255,0.05)", border: i === 0 ? "1px solid rgba(255,215,0,0.5)" : "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "12px 14px", marginBottom: 10, position: "relative", overflow: "hidden" } }, i === 0 && /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, right: 0, background: "linear-gradient(135deg,#FFD700,#FFA500)", color: "#7b0000", fontSize: 9, fontWeight: 900, padding: "3px 10px", borderBottomLeftRadius: 10, letterSpacing: 1 } }, "\u2B50 LEADING"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { position: "relative" } }, /* @__PURE__ */ React.createElement(Avatar, { player: s, size: 44 }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", bottom: -2, right: -4, background: i < 3 ? ["#FFD700", "#C0C0C0", "#CD7F32"][i] : "#555", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: i < 3 ? "#000" : "#fff", border: "2px solid #0d0221" } }, i + 1)), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 800, fontSize: 16, color: i === 0 ? "#FFD700" : "#fff" } }, s.name), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 1 } }, s.gamesPlayed, "g \xB7 ", s.pts, "pts \xB7 ", s.wins, "\u{1F3C6}")), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 24, fontWeight: 900, color: i === 0 ? "#FFD700" : "#fff", lineHeight: 1 } }, s.avg.toFixed(1)), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.35)", letterSpacing: 0.5 } }, "AVG/GAME"))), s.gamesPlayed > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 5, marginTop: 10, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" } }, [1, 2, 3, 4].map((p) => /* @__PURE__ */ React.createElement("div", { key: p, style: { flex: 1, textAlign: "center", background: "rgba(0,0,0,0.25)", borderRadius: 8, padding: "3px 0" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9, color: PLACE_COLORS[p] } }, ["\u{1F947}", "\u{1F948}", "\u{1F949}", "4th"][p - 1]), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, fontWeight: 800 } }, s.pc[p])))))))), tab === "players" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { onClick: () => setAddingPlayer(true), style: { width: "100%", padding: 13, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 14, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer", marginBottom: 14, letterSpacing: 1 } }, "\u2795 ADD PLAYER"), players.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: 40, color: "rgba(255,255,255,0.3)", fontSize: 13 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 44 } }, "\u{1F465}"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8 } }, "No players yet!")) : players.map((p) => {
+    const ch = getChar(p.char);
+    return /* @__PURE__ */ React.createElement("div", { key: p.id, style: { display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "10px 14px", marginBottom: 8 } }, /* @__PURE__ */ React.createElement(Avatar, { player: p, size: 40 }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 800, fontSize: 15 } }, p.name), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: ch.bg, marginTop: 1 } }, ch.emoji, " ", ch.name)), /* @__PURE__ */ React.createElement("button", { onClick: () => removePlayer(p.id), style: { background: "rgba(231,76,60,0.15)", border: "1px solid rgba(231,76,60,0.3)", borderRadius: 8, color: "#e74c3c", padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 } }, "\u2715"));
+  })), tab === "history" && /* @__PURE__ */ React.createElement("div", null, games.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.3)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 48 } }, "\u{1F4DC}"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 13 } }, "No games yet.")) : [...games].reverse().map((g, gi) => /* @__PURE__ */ React.createElement("div", { key: g.id, style: { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "12px 14px", marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 800, fontSize: 13, color: "#FFD700" } }, "\u2B50 Game #", games.length - gi), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: "rgba(255,255,255,0.35)" } }, g.date), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteGame(g.id), style: { background: "transparent", border: "none", color: "rgba(255,255,255,0.25)", cursor: "pointer", fontSize: 15 } }, "\u{1F5D1}")), Object.entries(g.placements).sort(([a], [b]) => a - b).map(([place, pid]) => {
+    const player = getPlayer(pid);
+    if (!player) return null;
+    const pl = parseInt(place);
+    return /* @__PURE__ */ React.createElement("div", { key: place, style: { display: "flex", alignItems: "center", gap: 9, marginBottom: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16, width: 24, textAlign: "center" } }, ["\u{1F947}", "\u{1F948}", "\u{1F949}", "4\uFE0F\u20E3"][pl - 1]), /* @__PURE__ */ React.createElement(Avatar, { player, size: 26 }), /* @__PURE__ */ React.createElement("span", { style: { flex: 1, fontWeight: 600, fontSize: 14 } }, player.name), /* @__PURE__ */ React.createElement("span", { style: { color: PLACE_COLORS[pl], fontWeight: 800, fontSize: 13 } }, "+", POINTS[pl]));
+  })))), tab === "rivals" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    if (players.length < 2) {
+      alert("Add at least 2 players first!");
+      return;
+    }
+    setAddingRivalry(true);
+  }, style: { width: "100%", padding: 13, background: "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 14, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer", marginBottom: 14, letterSpacing: 1 } }, "\u2694\uFE0F NEW RIVALRY"), rivalries.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", padding: "50px 20px", color: "rgba(255,255,255,0.3)" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 48 } }, "\u2694\uFE0F"), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, fontSize: 13 } }, "No rivalries yet."), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, fontSize: 11, opacity: 0.6 } }, "Track Kart, Tennis, anything.")) : rivalries.map((r) => {
+    const p1 = getPlayer(r.p1), p2 = getPlayer(r.p2);
+    if (!p1 || !p2) return null;
+    const p1wins = r.matches.filter((m) => m.winner === r.p1).length;
+    const p2wins = r.matches.filter((m) => m.winner === r.p2).length;
+    const total = r.matches.length;
+    return /* @__PURE__ */ React.createElement("div", { key: r.id, style: { background: "rgba(108,52,131,0.2)", border: "1px solid rgba(167,139,250,0.25)", borderRadius: 16, padding: 14, marginBottom: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement(Avatar, { player: p1, size: 36 }), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 20, fontWeight: 900, color: "#FFD700" } }, p1wins), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.4)" } }, "WINS"))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 18 } }, "\u2694\uFE0F"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, color: "rgba(255,255,255,0.35)" } }, total, " match", total !== 1 ? "es" : "")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 20, fontWeight: 900, color: "#FFD700" } }, p2wins), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.4)" } }, "WINS")), /* @__PURE__ */ React.createElement(Avatar, { player: p2, size: 36 }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 800, fontSize: 14 } }, p1.name), /* @__PURE__ */ React.createElement("span", { style: { color: "rgba(255,255,255,0.3)", fontSize: 12 } }, "vs"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 800, fontSize: 14 } }, p2.name)), total > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", height: 6, borderRadius: 4, overflow: "hidden", marginBottom: 10, background: "rgba(255,255,255,0.1)" } }, /* @__PURE__ */ React.createElement("div", { style: { width: `${p1wins / total * 100}%`, background: getChar(p1.char).bg } }), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, background: getChar(p2.char).bg } })), r.matches.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 10 } }, [...r.matches].reverse().slice(0, 5).map((m) => {
+      const winner = getPlayer(m.winner);
+      return /* @__PURE__ */ React.createElement("div", { key: m.id, style: { display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, flex: 1, color: "rgba(255,255,255,0.6)" } }, m.game), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: winner ? getChar(winner.char).bg : "#fff" } }, "\u{1F3C6} ", winner?.name), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 10, color: "rgba(255,255,255,0.3)" } }, m.date));
+    })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      setLoggingMatch(r.id);
+      setMatchGame("");
+      setMatchWinner(null);
+    }, style: { flex: 1, padding: 8, background: "rgba(167,139,250,0.2)", border: "1px solid rgba(167,139,250,0.4)", borderRadius: 10, color: "#a78bfa", fontWeight: 700, fontSize: 12, cursor: "pointer" } }, "+ Log Match"), /* @__PURE__ */ React.createElement("button", { onClick: () => deleteRivalry(r.id), style: { padding: "8px 12px", background: "transparent", border: "1px solid rgba(231,76,60,0.25)", borderRadius: 10, color: "rgba(231,76,60,0.5)", fontSize: 12, cursor: "pointer" } }, "\u{1F5D1}")));
+  }))), addingPlayer && /* @__PURE__ */ React.createElement(Modal, { onClose: () => {
+    setAddingPlayer(false);
+    setPlayerName("");
+    setPickedChar(null);
+  } }, /* @__PURE__ */ React.createElement("h2", { style: { margin: "0 0 14px", fontSize: 17, color: "#FFD700" } }, "\u{1F464} Add Player"), /* @__PURE__ */ React.createElement("input", { value: playerName, onChange: (e) => setPlayerName(e.target.value), placeholder: "Player name...", style: { width: "100%", padding: "11px 14px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, color: "#fff", fontSize: 15, outline: "none", marginBottom: 14 } }), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8, letterSpacing: 1 } }, "PICK A CHARACTER"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 } }, CHARACTERS.map((ch) => /* @__PURE__ */ React.createElement("button", { key: ch.id, onClick: () => setPickedChar(ch.id), style: { padding: "10px 4px", background: pickedChar === ch.id ? `${ch.bg}44` : "rgba(255,255,255,0.05)", border: pickedChar === ch.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 12, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 22 } }, ch.emoji), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 9, color: pickedChar === ch.id ? ch.bg : "rgba(255,255,255,0.5)", fontWeight: 700 } }, ch.name.toUpperCase())))), /* @__PURE__ */ React.createElement("button", { onClick: confirmAddPlayer, disabled: !playerName.trim() || !pickedChar, style: { width: "100%", padding: 13, background: !playerName.trim() || !pickedChar ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 12, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer" } }, "\u2705 ADD PLAYER")), loggingGame && /* @__PURE__ */ React.createElement(Modal, { onClose: () => {
+    setLoggingGame(false);
+    setPlacement({});
+    setGameError("");
+  } }, /* @__PURE__ */ React.createElement("h2", { style: { margin: "0 0 4px", fontSize: 17, color: "#FFD700" } }, "\u{1F3B2} Log Game"), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 14px", fontSize: 12, color: "rgba(255,255,255,0.45)" } }, "Tap players to assign places."), [1, 2, 3, 4].map((place) => /* @__PURE__ */ React.createElement("div", { key: place, style: { marginBottom: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: PLACE_COLORS[place], marginBottom: 6, letterSpacing: 1 } }, ["\u{1F947} 1ST", "\u{1F948} 2ND", "\u{1F949} 3RD", "4TH"][place - 1], " \u2014 +", POINTS[place], "pts"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 } }, players.map((p) => {
+    const assignedTo = Object.entries(placement).find(([, v]) => v === p.id)?.[0];
+    const isHere = placement[place] === p.id;
+    const isElsewhere = assignedTo && !isHere;
+    const ch = getChar(p.char);
+    return /* @__PURE__ */ React.createElement("button", { key: p.id, onClick: () => setPlace(place, isHere ? null : p.id), disabled: isElsewhere, style: { display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: isHere ? `${ch.bg}55` : isElsewhere ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.08)", border: isHere ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: isElsewhere ? "rgba(255,255,255,0.2)" : "#fff", fontWeight: 700, fontSize: 13, cursor: isElsewhere ? "not-allowed" : "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14 } }, ch.emoji), " ", p.name);
+  })))), gameError && /* @__PURE__ */ React.createElement("div", { style: { color: "#e74c3c", fontSize: 13, marginBottom: 10 } }, gameError), /* @__PURE__ */ React.createElement("button", { onClick: submitGame, style: { width: "100%", padding: 13, background: "linear-gradient(135deg,#e8003d,#a00020)", border: "2px solid #FFD700", borderRadius: 12, color: "#FFD700", fontSize: 14, fontWeight: 900, cursor: "pointer", marginTop: 4 } }, "\u2705 SAVE GAME")), addingRivalry && /* @__PURE__ */ React.createElement(Modal, { onClose: () => {
+    setAddingRivalry(false);
+    setRivalP1(null);
+    setRivalP2(null);
+  } }, /* @__PURE__ */ React.createElement("h2", { style: { margin: "0 0 14px", fontSize: 17, color: "#a78bfa" } }, "\u2694\uFE0F New Rivalry"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 } }, "PLAYER 1"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 } }, players.map((p) => {
+    const ch = getChar(p.char);
+    return /* @__PURE__ */ React.createElement("button", { key: p.id, onClick: () => setRivalP1(p.id), style: { display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: rivalP1 === p.id ? `${ch.bg}55` : "rgba(255,255,255,0.08)", border: rivalP1 === p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", null, ch.emoji), " ", p.name);
+  })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 } }, "PLAYER 2"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 16 } }, players.filter((p) => p.id !== rivalP1).map((p) => {
+    const ch = getChar(p.char);
+    return /* @__PURE__ */ React.createElement("button", { key: p.id, onClick: () => setRivalP2(p.id), style: { display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", background: rivalP2 === p.id ? `${ch.bg}55` : "rgba(255,255,255,0.08)", border: rivalP2 === p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 20, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", null, ch.emoji), " ", p.name);
+  })), /* @__PURE__ */ React.createElement("button", { onClick: confirmAddRivalry, disabled: !rivalP1 || !rivalP2, style: { width: "100%", padding: 13, background: !rivalP1 || !rivalP2 ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 12, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer" } }, "\u2694\uFE0F CREATE RIVALRY")), loggingMatch && (() => {
+    const r = rivalries.find((x) => x.id === loggingMatch);
+    if (!r) return null;
+    const p1 = getPlayer(r.p1), p2 = getPlayer(r.p2);
+    return /* @__PURE__ */ React.createElement(Modal, { onClose: () => {
+      setLoggingMatch(null);
+      setMatchGame("");
+      setMatchWinner(null);
+    } }, /* @__PURE__ */ React.createElement("h2", { style: { margin: "0 0 14px", fontSize: 17, color: "#a78bfa" } }, "\u{1F3AE} Log Match"), /* @__PURE__ */ React.createElement("input", { value: matchGame, onChange: (e) => setMatchGame(e.target.value), placeholder: "Game (e.g. Mario Kart)", style: { width: "100%", padding: "11px 14px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 10, color: "#fff", fontSize: 14, outline: "none", marginBottom: 14 } }), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 } }, "WHO WON?"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, marginBottom: 16 } }, [p1, p2].map((p) => {
+      const ch = getChar(p.char);
+      return /* @__PURE__ */ React.createElement("button", { key: p.id, onClick: () => setMatchWinner(p.id), style: { flex: 1, padding: "14px 10px", background: matchWinner === p.id ? `${ch.bg}55` : "rgba(255,255,255,0.07)", border: matchWinner === p.id ? `2px solid ${ch.bg}` : "2px solid rgba(255,255,255,0.08)", borderRadius: 14, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement(Avatar, { player: p, size: 40 }), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 800, fontSize: 14, color: "#fff" } }, p.name), matchWinner === p.id && /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16 } }, "\u{1F3C6}"));
+    })), /* @__PURE__ */ React.createElement("button", { onClick: submitMatch, disabled: !matchGame.trim() || !matchWinner, style: { width: "100%", padding: 13, background: !matchGame.trim() || !matchWinner ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6c3483,#4a235a)", border: "2px solid #a78bfa", borderRadius: 12, color: "#a78bfa", fontSize: 14, fontWeight: 900, cursor: "pointer" } }, "\u2705 SAVE MATCH"));
+  })());
 }
+ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(App, null));
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 } catch (e) {
   var box = document.getElementById('error-box');
   box.style.display = 'block';
